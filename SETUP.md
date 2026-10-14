@@ -101,6 +101,14 @@ GitHub Actions 跑在**数据中心 IP** 上，B 站对这类 IP 比家用 IP �
 复制到的是 `buvid3=xxx; bili_ticket=xxx; SESSDATA=xxx; ...` 这一长串。
 **不要包含 `cookie:` 这个词本身。**
 
+> ⚠️ **先把 `SESSDATA=...` 那一段删掉再粘进 Secret。**
+> `SESSDATA` 是 B 站的**登录态凭证，等价于账号密码**，拿到的人可以不输密码操作你的账号。
+> 而抓公开视频列表**根本不需要登录**——`buvid3` + `bili_ticket` 就是过风控的主力。
+> Cookie 是一串 `key=value;`，找到 `SESSDATA=` 开头、到下一个 `;` 为止，整段删掉即可
+> （它的值里常带 `%2C` `%3A` 这类编码字符，别只删一半）。
+> 仓库若是私有的话留着也行；**打算公开就必须删**。
+> 万一泄漏：B 站 设置 → 安全隐私 → 登录设备管理 → 退出所有设备，然后改密码，SESSDATA 立刻失效。
+
 > 如果里面有 `%2C` `%3A` 这类百分号，说明是 URL 编码版，重新复制一次通常就好了。
 > Cookie 大约 **半年**失效一次，发现每天都是「今日暂无新素材」时就该换一个。
 
@@ -359,7 +367,8 @@ SMTP_PASSWORD     = ________________  (16位授权码，非QQ密码)
 MAIL_FROM         = ________@qq.com
 MAIL_TO           = ________@qq.com
 
-BILI_COOKIE       = buvid3=...; bili_ticket=...; SESSDATA=...
+BILI_COOKIE       = buvid3=...; b_nut=...; bili_ticket=...; buvid4=...
+                    ↑ 注意：SESSDATA=... 那一段要删掉，它是登录态=账号密码
 
 GUARDIAN_API_KEY  = (可选)
 GIT_USER_NAME     = (可选)
