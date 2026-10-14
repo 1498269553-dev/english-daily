@@ -295,6 +295,18 @@ uploaders:
 
 改 3 个：`LLM_BASE_URL` / `LLM_API_KEY` / `LLM_MODEL`。对照表见第 2 节。
 
+### 8.4 兜底源体检（怀疑新闻源坏了就跑这个）
+
+```bash
+python tools/diag_feeds.py     # 逐个 RSS 体检：条目数、摘要长度、可用条数
+python tools/probe_feeds.py    # 探测 18 个候选源，找替代品用
+```
+
+`diag_feeds.py` 会打印每个源的「近全文 / 可用」条数。若某天全是 0，说明该源挂了，
+用 `probe_feeds.py` 找替代 URL，改 `src/news.py` 里的 `DEFAULT_FEEDS` 即可。
+
+> 2026-10-14 实测基线：Guardian 两个源提供 90 条近全文素材，其余源合计 200+ 条导语级素材。
+
 ---
 
 ## 9. 排错速查
@@ -305,6 +317,9 @@ uploaders:
 | 邮件收不到，日志报 `SSL` 相关 | 端口/加密不匹配 | 465 ↔ `USE_SSL=1`；587 ↔ `USE_SSL=0` |
 | `SMTP_USER` 被拒 | 没带 `@qq.com` | 补全 |
 | 成稿显示「今日暂无新素材」 | B 站风控（412）或 UP 主真没更新 | 换 `BILI_COOKIE`；或勾 `force_fallback` 手动跑验证兜底源 |
+| Actions 失败，日志末尾 `exit code 3` | 代码里 `return 3` = 「兜底源也无可用素材」，即 B 站和新闻源都没抓到 | 2026-10-14 已修（RSS 长度门槛从 300 降到 120/600 两档，并换上 Guardian 近全文源）。若再现，跑 `python tools/diag_feeds.py` 体检源；同时确认 `BILI_COOKIE` 是否过期 |
+| Actions 失败，日志末尾 `exit code 2` | 兜底被禁用（`FALLBACK_ENABLED=0`）且 B 站无素材 | 把 `FALLBACK_ENABLED` 改回 `1` |
+| Actions 失败，日志末尾 `exit code 4` | 生成成稿时抛异常，多半是 LLM key 无效或模型名写错 | 检查 `LLM_API_KEY` / `LLM_MODEL` / `LLM_BASE_URL` 三者是否配套 |
 | Actions 报 `Bad credentials` | 仓库改名/换账号 | 重新用 Desktop Publish 或检查 remote |
 | Desktop 提示不是 Git 仓库 | 路径选错 | 选 `english-daily` 那一层 |
 | 发布后发现是公开库 | 忘了勾 private | Settings → 页面最底 **Change repository visibility** → Private |
