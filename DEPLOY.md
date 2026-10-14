@@ -85,9 +85,11 @@ Token 在 <https://github.com/settings/tokens> 生成，勾 `repo` 权限即可�
 4. **Headers** → Request Headers → 找到 `Cookie:` 那行
 5. 右键复制**整行 Cookie 的值**（只要 `buvid3=xxx; bili_ticket=xxx; ...` 这一串，不含 `Cookie:` 字样）
 
-> 有登录态的话建议一并带上 `SESSDATA`。注意 DevTools 里显示的是 URL 编码版本，
-> 复制后如果出现 `%2C` `%2A` 之类，需要 URL 解码一下。
-> 有效期约 30 天，过期后重新复制一次即可。
+> ⚠️ **复制后先删掉 `SESSDATA=...;` `bili_jct=...;` `DedeUserID=...;` 这三段再填。**
+> 它们是登录态凭证（等价于账号密码），而抓公开视频列表只需要 `buvid3` + `bili_ticket`
+> 这类匿名设备标识。可用 `tools/clean_cookie.py` 自动清洗。详见 [COOKIE.md](COOKIE.md)。
+> DevTools 里显示的是 URL 编码版本，若出现 `%2C` `%3A` 之类需 URL 解码。
+> `bili_ticket` 只活几小时~几天，失效后重新复制一次即可。
 
 ---
 

@@ -8,6 +8,7 @@ UP 主当天没更新时，自动从英美权威媒体（匿名）随机挑一�
 > **首次部署请看 [DEPLOY.md](DEPLOY.md)** —— 含 GitHub Secrets 完整清单与排错手册。
 > **准备推送看 [PUSH.md](PUSH.md)** —— 逐步操作清单，命令可直接复制。
 > **想改成公开库先看 [PUBLIC.md](PUBLIC.md)** —— 风险评估（版权 / Cookie 登录态 / Fork PR）+ 操作清单。
+> **B 站 Cookie 看 [COOKIE.md](COOKIE.md)** —— 怎么拿、为什么要用、SESSDATA 风险、如何查泄漏、泄漏后怎么办。
 
 ---
 
@@ -273,7 +274,7 @@ B 站的风控分三层，本项目对应三层应对：
 
 **提高成功率的做法，按性价比排序：**
 
-1. **配置 `BILI_COOKIE`** —— 浏览器登录 B 站 → DevTools → Network → 任意 `api.bilibili.com` 请求 → Request Headers → 复制整段 Cookie。至少需要 `buvid3`、`bili_ticket`，有登录态可加 `SESSDATA`（用 URL 解码后的值，不是 DevTools 里那个编码版本）。有效期约 30 天。
+1. **配置 `BILI_COOKIE`** —— 浏览器登录 B 站 → DevTools → Network → 任意 `api.bilibili.com` 请求 → Request Headers → 复制整段 Cookie。**只要匿名设备标识 `buvid3` / `buvid4` / `b_nut` / `bili_ticket`**，把 `SESSDATA`、`bili_jct`、`DedeUserID` 三段删掉（它们是登录态凭证，抓公开视频用不上，泄漏等于账号被盗）。可用 `tools/clean_cookie.py` 自动清洗。完整说明见 **[COOKIE.md](COOKIE.md)**。`bili_ticket` 只活几小时~几天，连续几天「暂无新素材」就该重抓。
 2. **不要调小节流间隔** —— `BILI_MIN_INTERVAL` 默认 1.5 秒，本机调试时可临时调到 3。调太小反而更容易被拦。
 3. **接受降级** —— 三条路径（动态接口 / 投稿列表 / 视频详情）任一可用即可出内容。全失败则自动走兜底媒体源，当天仍能收到一篇精读稿，只是开头标注「今日暂无新素材」。
 
