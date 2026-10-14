@@ -289,3 +289,8 @@ python src/main.py --force-fallback     # 跳过 B 站，直接用媒体源（�
 ```
 
 在 Actions 页面勾选 `force_fallback` 同样能强制走兜底，用来验证兜底链路是否正常。
+## 往期
+
+| 日期 | 字节 |
+| --- | --- |
+| 2026-10-14 | 8,955 |
