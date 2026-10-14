@@ -61,14 +61,25 @@ jobs:
             python src/main.py
           fi
 
+      # 是否把成稿（posts/）提交进仓库。
+      # 公开仓库建议关掉：成稿的「全文对照」是媒体原文的完整转载，属第三方版权内容。
+      # 在仓库 Settings → Secrets and variables → Actions → Variables 新建
+      #   COMMIT_POSTS = false
+      # 即可只提交运行状态（data/），不提交成稿。未设置该变量时默认提交成稿。
       - name: Commit & push
         env:
           GIT_NAME: ${{ secrets.GIT_USER_NAME }}
           GIT_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
+          COMMIT_POSTS: ${{ vars.COMMIT_POSTS }}
         run: |
           git config user.name  "${GIT_NAME:-english-daily-bot}"
           git config user.email "${GIT_EMAIL:-actions@github.com}"
-          git add posts README.md data
+          if [ "${COMMIT_POSTS}" = "false" ]; then
+            echo "COMMIT_POSTS=false：跳过成稿入库"
+            git add data
+          else
+            git add posts README.md data
+          fi
           if git diff --staged --quiet; then
             echo "no changes"
           else
