@@ -165,9 +165,9 @@ def build_markdown(
             f">",
             f"> 以下内容来自英美权威媒体，用于在 UP 主未更新的日子里保持输入。",
             "",
-            f"**来源**：{material.source if material else '兜底媒体'}",
-            f"**标题**：{material.title if material else ''}",
-            f"**链接**：<{material.url if material else ''}>",
+            f"**来源**：兜底媒体",
+            f"**标题**：",
+            f"**链接**：",
             "",
         ]
     else:
@@ -236,7 +236,8 @@ def main() -> int:
             return 3
         body = art.body or art.summary
         warn = ""
-        if art.kind == "rss":
+        # RSS 分两种情况：Guardian 的 RSS 自带近全文，其余只有导语需要扩写
+        if art.kind == "rss" and len(art.summary) < 600:
             warn = (
                 "\n\n【素材说明】该源只提供标题与导语，正文为基于导语的合理扩写，"
                 "并非原文全文。请点击链接阅读原文核对细节。"

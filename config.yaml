@@ -15,14 +15,22 @@ uploaders:
   #   recent_days: 3
   #   backfill_days: 365
 
-# 兜底媒体源：填左侧 key 或直接填 RSS URL；留空则用内置全部源
+# 兜底媒体源：填左侧 key 或直接填 RSS URL；留空则用内置全部源。
+# ⚠️ 2026-10-14 实测：guardian-* 的 RSS 描述带近全文（约 1900 字符），素材质量最好，务必保留；
+#    BBC / NYT / FT 只有 150~220 字符导语（正文由 LLM 基于导语扩写）；
+#    wapo 返回 502、times / reuters 返回 301，已失效，别再单独启用。
 fallback_sources:
+  - guardian-intl
+  - guardian-world
   - bbc-world
   - bbc-business
   - bbc-science
   - nyt-world
   - nyt-tech
-  - wapo-world
+  - cnn-world
+  - independent-world
+  - telegraph-news
+  - npr-world
   - ft-world
 
 # LLM：OpenAI 兼容接口，DeepSeek 示例
