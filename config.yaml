@@ -1,0 +1,36 @@
+# UP 主列表：mid 留空则运行时按 name 通过 B 站搜索接口解析
+uploaders:
+  - name: 艾伦-麦克法兰
+    mid: "3546896526215753"      # 剑桥大学人类学教授，长视频（约 5-22 分钟）
+    # 日常只推送最近 7 天发布的内容
+    recent_days: 7
+    # 首次运行时回溯多少天建立历史基线。
+    # 3650 天 ≈ 10 年，足以覆盖该 UP 主从 2025-05 至今的全部视频；
+    # 回溯到的历史内容只登记为游标锚点，不会被推送。
+    # 若只想看最近半年历史，改成 180 即可。
+    backfill_days: 3650
+
+  # - name: 英语兔口语
+  #   mid: "686890264"
+  #   recent_days: 3
+  #   backfill_days: 365
+
+# 兜底媒体源：填左侧 key 或直接填 RSS URL；留空则用内置全部源
+fallback_sources:
+  - bbc-world
+  - bbc-business
+  - bbc-science
+  - nyt-world
+  - nyt-tech
+  - wapo-world
+  - ft-world
+
+# LLM：OpenAI 兼容接口，DeepSeek 示例
+llm_base_url: "https://api.deepseek.com/v1"
+llm_model: "deepseek-chat"
+# LLM_API_KEY 请放在 .env 或 GitHub Secrets，不要写在这里
+
+# 时区偏移（小时），用于判断「当天」与文件名日期
+timezone_offset: 8
+
+bili_user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"

@@ -1,0 +1,75 @@
+name: Daily English Digest
+
+on:
+  schedule:
+    # UTC 01:00 == 北京时间 09:00。想换时间只改这里
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+    inputs:
+      force_fallback:
+        description: "跳过 B 站，直接用兜底媒体源"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-english-digest
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # 首次全量回溯时，每个请求间隔 1.5~2.3 秒，100+ 条视频约需 4-6 分钟，
+    # 加上重试退避可能更久，因此超时放宽到 40 分钟。
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Run pipeline
+        env:
+          BILI_COOKIE: ${{ secrets.BILI_COOKIE }}
+          BILI_MIN_INTERVAL: "1.5"
+          BILI_JITTER: "0.8"
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USE_SSL: ${{ secrets.SMTP_USE_SSL }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          GUARDIAN_API_KEY: ${{ secrets.GUARDIAN_API_KEY }}
+          FALLBACK_ENABLED: "1"
+        run: |
+          if [ "${{ inputs.force_fallback }}" = "true" ]; then
+            python src/main.py --force-fallback
+          else
+            python src/main.py
+          fi
+
+      - name: Commit & push
+        env:
+          GIT_NAME: ${{ secrets.GIT_USER_NAME }}
+          GIT_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
+        run: |
+          git config user.name  "${GIT_NAME:-english-daily-bot}"
+          git config user.email "${GIT_EMAIL:-actions@github.com}"
+          git add posts README.md data
+          if git diff --staged --quiet; then
+            echo "no changes"
+          else
+            git commit -m "digest: $(TZ=Asia/Shanghai date +%Y-%m-%d)"
+            git push
+          fi
