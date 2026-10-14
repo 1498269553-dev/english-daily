@@ -94,18 +94,26 @@ def pick_bili_material(cfg: Config, fetcher: Fetcher) -> tuple[Material | None, 
         if not items:
             notes.append(f"{up.name}: 最近 {up.recent_days} 天无更新")
             continue
-        fresh = [i for i in items if i.bvid not in known]
+        # 没有正文、连标题都没有的条目做不出素材，直接跳过
+        usable = [
+            i for i in items
+            if i.bvid not in known and (i.title or len(i.text.strip()) >= 80)
+        ]
+        fresh = usable or [i for i in items if i.bvid not in known]
         if not fresh:
             notes.append(f"{up.name}: 最新内容已推送过")
             continue
-        top = fresh[0]
+        # 该 UP 主以长视频为主：有新视频时优先用视频，只有在视频都推过时才取动态
+        vids = [i for i in fresh if i.kind == "video"]
+        top = vids[0] if vids else fresh[0]
         body = top.text.strip()
         # 简介为空时用 view 接口补一次
-        if len(body) < 120 and top.kind == "video":
+        if len(body) < 120 and top.kind == "video" and top.bvid.startswith("BV"):
             detail = fetcher.fetch_detail(top.bvid)
             if detail:
                 body = ((detail.get("desc") or "") + "\n" + body).strip()
-        parts = [f"【视频标题】{top.title}", f"【UP 主】{up.name}"]
+        title = top.title.strip() or (body.splitlines()[0][:80] if body else "（无标题）")
+        parts = [f"【视频标题】{title}", f"【UP 主】{up.name}"]
         if body:
             parts.append(f"【简介/文案】\n{body[:4000]}")
         parts.append(
@@ -138,7 +146,7 @@ def pick_bili_material(cfg: Config, fetcher: Fetcher) -> tuple[Material | None, 
         return (
             Material(
                 kind="video" if top.kind == "video" else "dynamic",
-                title=top.title,
+                title=title,
                 url=top.url,
                 source=f"Bilibili · {up.name}",
                 published=datetime.fromtimestamp(
@@ -146,6 +154,7 @@ def pick_bili_material(cfg: Config, fetcher: Fetcher) -> tuple[Material | None, 
                 ).strftime("%Y-%m-%d %H:%M"),
                 body="\n\n".join(parts),
                 author=up.name,
+                key=top.bvid,
             ),
             " | ".join(notes),
         )
@@ -230,7 +239,17 @@ def main() -> int:
             sources=cfg.fallback_sources or None,
             seed=today.toordinal(),  # 同一天重跑结果一致，便于调试
         )
-        art = nf.pick()
+        # 最多试 5 次，尽量避开最近已经推过的新闻，避免连着几天撞同一篇
+        art = None
+        for _ in range(5):
+            cand = nf.pick_with_seed(seed=today.toordinal() + _)
+            if cand is None:
+                break
+            if cand.url in state_mod.load().get("pushed", []):
+                log.info("该兜底素材近期已推过，换一篇：%s", cand.title[:50])
+                continue
+            art = cand
+            break
         if art is None:
             log.error("兜底源也无可用素材")
             return 3
@@ -249,6 +268,7 @@ def main() -> int:
             source=art.source,
             published=art.published,
             body=f"【新闻标题】{art.title}\n\n【导语】{art.summary}\n\n【正文】{body}{warn}",
+            key=art.url,
         )
         reason = f"{reason}；已启用兜底素材：{art.source}"
 
@@ -300,11 +320,15 @@ def main() -> int:
             log.exception("邮件发送失败（成稿已生成，不阻断 commit）: %s", exc)
 
     if not cfg.dry_run:
+        # ⚠️ 必须登记已推送，否则明天 known 里查不到这条，会反复推同一篇
+        if material and material.key:
+            state_mod.record(material.key)
         st = state_mod.load()
         st["last_run"] = today.isoformat()
         if material and material.url:
             st["last_source"] = material.url
         state_mod.save(st)
+        log.info("已登记去重主键：%s", material.key if material else "")
 
     log.info("done")
     return 0

@@ -1,5 +1,7 @@
 {
-  "pushed": [],
+  "pushed": [
+    "dynamic-1257635229686824962"
+  ],
   "baseline": {
     "3546896526215753": [
       "BV11BjG6XEjn",
@@ -126,6 +128,6 @@
     ]
   },
   "last_run": "2026-10-14T14:27:58.776897+08:00",
-  "last_bvid": null,
+  "last_bvid": "dynamic-1257635229686824962",
   "last_source": "https://t.bilibili.com/1257635229686824962"
 }

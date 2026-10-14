@@ -88,7 +88,11 @@ class NewsFetcher:
 
     def pick(self) -> Article | None:
         """随机挑一篇。先试 Guardian（有 key），失败或无 key 则走 RSS 池。"""
-        rng = random.Random(self.seed)
+        return self.pick_with_seed(self.seed)
+
+    def pick_with_seed(self, seed: int | None) -> Article | None:
+        """按指定随机种子挑一篇——调用方换种子即可拿到不同结果。"""
+        rng = random.Random(seed)
         attempts: list[Article] = []
         if self.guardian_key:
             g = self._from_guardian()

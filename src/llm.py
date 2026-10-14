@@ -115,6 +115,7 @@ class Material:
     published: str = ""
     body: str = ""
     author: str = ""
+    key: str = ""             # 去重主键：B 站用 bvid，新闻用 url
 
     def to_prompt(self) -> str:
         head = f"素材类型：{self.kind}\n标题：{self.title}\n来源：{self.source}"
