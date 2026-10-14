@@ -7,6 +7,9 @@
 
 ## 步骤 1 · 建空仓库
 
+> 如果你用 **GitHub Desktop 的 Publish repository**，这一步可以跳过——它会自动建库。
+> 只有走命令行方式才需要手动建。
+
 打开 <https://github.com/new>
 
 | 字段 | 填什么 |
@@ -23,7 +26,31 @@
 
 ## 步骤 2 · 推送
 
-**方式 A · SSH（推荐，长期省事）**
+**方式 A · GitHub Desktop（最省事，你已经装了）**
+
+1. 打开桌面上的 **GitHub Desktop**
+2. 如果还没登录：菜单 **File → Options → Accounts → Sign in**，用浏览器授权登录
+3. **File → Add local repository**（或快捷键 `Ctrl+O`）
+4. 路径选：`D:\WorkBuddyData\2026-10-14-10-35-29\english-daily`
+   - 点 **Add repository**
+   - ⚠️ 如果弹 "This directory does not appear to be a Git repository" → 说明路径选错了，检查一下是不是点进了 `english-daily` 里面一层
+5. 加进来后，顶部会看到 **Publish repository** 按钮
+6. 点它，填：
+   | 字段 | 填什么 |
+   | --- | --- |
+   | Name | `english-daily` |
+   | Description | 每日英语精读自动推送 |
+   | ✅ Keep this code private | **勾上**（不勾就是公开库，别人能看到你的配置） |
+   | Organization | 留空（None） |
+7. 点 **Publish repository**，等进度条走完
+
+> 这一步 GitHub Desktop 会自动帮你：在 GitHub 上建仓库 + 设置 `origin` + `git push -u origin main`。
+> 所以**步骤 1 的网页建仓库可以跳过**——两种方式选一个即可。
+>
+> 若登录时要求输入密码而不是弹浏览器：GitHub 早已不支持密码登录，需要去
+> <https://github.com/settings/tokens> 生成 Token（勾 `repo`），粘贴进去。
+
+**方式 B · SSH（命令行）**
 
 ```bash
 cd D:/WorkBuddyData/2026-14-10-35-29/english-daily
@@ -43,7 +70,7 @@ cat ~/.ssh/id_ed25519.pub
 
 把输出的公钥粘到 <https://github.com/settings/keys> → New SSH key。
 
-**方式 B · HTTPS**
+**方式 C · HTTPS（命令行）**
 
 ```bash
 cd D:/WorkBuddyData/2026-10-14-10-35-29/english-daily
@@ -128,6 +155,8 @@ Token 在 <https://github.com/settings/tokens> 生成，勾 `repo` 权限。
 
 | 现象 | 原因 | 处理 |
 | --- | --- | --- |
+| Desktop 提示目录不是 Git 仓库 | 路径选错 | 确认选的是 `english-daily` 这一层（里面有 `.git`） |
+| Desktop Publish 后仓库是公开的 | 忘了勾 private | GitHub 网页 → Settings → 最底部 **Change repository visibility** → Private |
 | `remote origin already exists` | 已配过远程 | `git remote set-url origin <新地址>` |
 | `Permission denied (publickey)` | SSH 未配置 | 改用 HTTPS，或先加 SSH key |
 | `Authentication failed` | 用了登录密码 | 改用 Personal Access Token |
