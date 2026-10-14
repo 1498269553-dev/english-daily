@@ -88,6 +88,14 @@ Token 在 <https://github.com/settings/tokens> 生成，勾 `repo` 权限。
 
 ## 步骤 3 · 配置 Secrets
 
+> **别的项目配过？还是要重新配一遍。**
+> GitHub Secrets 是**仓库级**的，账号之间、仓库之间都不共享，没有「全局 Secrets」这种东西。
+> 个人账号下的仓库尤其如此——只有 Organization（组织）才能设组织级 Secrets 让成员仓库继承，
+> 而且需要你是该组织的 Owner。
+>
+> ⚠️ 更麻烦的一点：**Secrets 是只写不可读的**。老仓库里配过的值，你现在在网页上**看不到明文**，
+> 只能覆盖。所以如果本地没留底，就得重新生成/复制一遍（见下表）。
+
 进入你的仓库 → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
 
 ### 必填 10 个
@@ -134,6 +142,41 @@ Token 在 <https://github.com/settings/tokens> 生成，勾 `repo` 权限。
 
 > 如果看到 `%2C` `%2A` `+` 这些，说明是 URL 编码版本，需要解码。
 > 最省事的办法：用上面的方法重新复制一次，通常 DevTools 给的就是解码后的。
+
+---
+
+### 哪些能直接复用，哪些必须重新生成
+
+| Secret | 老项目配过时怎么办 |
+| --- | --- |
+| `LLM_BASE_URL` / `LLM_MODEL` | 同一个服务商就**照抄**，值不变 |
+| `LLM_API_KEY` | 本地/密码管理器里还留着就抄；**丢了只能去服务商后台重新生成** |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USE_SSL` | **照抄**，QQ 邮箱就是 `smtp.qq.com` / `465` / `1` |
+| `SMTP_USER` / `MAIL_FROM` / `MAIL_TO` | **照抄** |
+| `SMTP_PASSWORD` | QQ 邮箱授权码可以**无限次重新生成**（设置 → 账户 → SMTP 服务），重新生成一次即可，老的会失效 |
+| `BILI_COOKIE` | 会过期，**建议现抓一次**（上面有步骤） |
+| `GUARDIAN_API_KEY` | 登录 Guardian 后台能看到，不会丢 |
+
+> 只有 `LLM_API_KEY` 需要你真去翻一下。其余要么照抄，要么 30 秒内能重生成。
+
+---
+
+### 更快的方式：gh CLI 批量导入
+
+点 12 次网页挺烦的。装了 GitHub CLI 的话，一条命令搞定：
+
+```bash
+winget install --id GitHub.cli      # 装 gh
+gh auth login                        # 登录一次
+
+cd D:/WorkBuddyData/2026-10-14-10-35-29/english-daily
+cp .env.example .env                 # 然后填好 .env（.env 已 gitignore，不会进仓库）
+bash tools/push_secrets.sh           # 自动从 .env 灌进 Secrets
+```
+
+脚本只会上 `BILI_COOKIE / LLM_* / SMTP_* / MAIL_* / GUARDIAN_API_KEY` 这 13 个，
+`DRY_RUN`、`SKIP_MAIL` 这类本地调试开关不会推上去（它们走 workflow 的 `with` 参数）。
+顺带的好处：`.env` 留在本地，下次换仓库/重装能直接再来一遍。
 
 ---
 
