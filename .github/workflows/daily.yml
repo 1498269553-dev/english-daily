@@ -2,7 +2,9 @@ name: Daily English Digest
 
 on:
   schedule:
-    # UTC 01:00 == 北京时间 09:00。想换时间只改这里
+    # ⚠️ cron 用的是 UTC 时间，北京时间 = UTC + 8
+    #   当前 "0 1 * * *" = UTC 01:00 = 北京时间 09:00
+    #   换算表见 DEPLOY.md
     - cron: "0 1 * * *"
   workflow_dispatch:
     inputs:
