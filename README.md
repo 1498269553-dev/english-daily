@@ -5,6 +5,7 @@ UP 主当天没更新时，自动从英美权威媒体（Guardian / BBC / NYT / 
 并在成稿开头明确标注「今日暂无新素材」。
 
 > **首次部署请看 [DEPLOY.md](DEPLOY.md)** —— 含 GitHub Secrets 完整清单与排错手册。
+> **准备推送看 [PUSH.md](PUSH.md)** —— 逐步操作清单，命令可直接复制。
 
 ---
 
